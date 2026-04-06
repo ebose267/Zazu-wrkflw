@@ -1,0 +1,2005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>The Zazu Workflow · by Alix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+
+<style>
+/* ── Variables ────────────────────────────────────────────────────── */
+:root {
+  --gold:    #D4AF37;
+  --gold-dim:#b8961e;
+  --cream:   #fbfbfb;
+  --ink:     #0a0a0a;
+  --ink2:    #1a1a1a;
+  --ink3:    #2a2a2a;
+  --muted:   #6b6b6b;
+  --border:  rgba(212,175,55,0.18);
+  --border2: rgba(212,175,55,0.08);
+  --glass:   rgba(251,251,251,0.03);
+  --r:       6px;
+  --sidebar-w: 280px;
+}
+
+/* ── Reset ────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--ink);
+  color:var(--cream);
+  overflow-x:hidden;
+  min-height:100vh;
+}
+
+/* ── Circle background pattern ───────────────────────────────────── */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background-image:
+    radial-gradient(circle, rgba(212,175,55,0.055) 1px, transparent 1px),
+    radial-gradient(circle, rgba(212,175,55,0.025) 1px, transparent 1px);
+  background-size: 48px 48px, 96px 96px;
+  background-position: 0 0, 24px 24px;
+}
+body::after{
+  content:'';
+  position:fixed;
+  top:-40vw; right:-20vw;
+  width:80vw; height:80vw;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(212,175,55,0.04) 0%, transparent 70%);
+  z-index:0;
+  pointer-events:none;
+}
+
+/* ── Sidebar overlay ─────────────────────────────────────────────── */
+#overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  z-index:90;
+  backdrop-filter:blur(2px);
+}
+#overlay.open{display:block}
+
+/* ── Sidebar ─────────────────────────────────────────────────────── */
+#sidebar{
+  position:fixed;
+  top:0; left:0;
+  width:var(--sidebar-w);
+  height:100vh;
+  background:var(--ink2);
+  border-right:1px solid var(--border);
+  z-index:100;
+  overflow-y:auto;
+  transform:translateX(-100%);
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
+  display:flex;
+  flex-direction:column;
+}
+#sidebar.open{transform:translateX(0)}
+
+.sidebar-logo{
+  padding:28px 24px 20px;
+  border-bottom:1px solid var(--border2);
+}
+.sidebar-logo span{
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:1.1rem;
+  color:var(--gold);
+  letter-spacing:.06em;
+}
+.sidebar-logo small{
+  display:block;
+  font-size:.7rem;
+  color:var(--muted);
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  margin-top:2px;
+}
+
+.sidebar-progress-wrap{
+  padding:16px 24px;
+  border-bottom:1px solid var(--border2);
+}
+.sidebar-progress-label{
+  font-size:.68rem;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--muted);
+  margin-bottom:8px;
+  display:flex;
+  justify-content:space-between;
+}
+.progress-track{
+  height:3px;
+  background:rgba(255,255,255,0.06);
+  border-radius:2px;
+  overflow:hidden;
+}
+.progress-fill{
+  height:100%;
+  background:linear-gradient(90deg, var(--gold-dim), var(--gold));
+  width:0%;
+  border-radius:2px;
+  transition:width .6s cubic-bezier(.4,0,.2,1);
+}
+
+.sidebar-nav{
+  flex:1;
+  padding:16px 0;
+}
+.nav-day-label{
+  font-family:'Syne',sans-serif;
+  font-size:.62rem;
+  font-weight:700;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  color:var(--gold);
+  padding:16px 24px 6px;
+}
+.nav-item{
+  display:block;
+  padding:9px 24px 9px 28px;
+  font-size:.82rem;
+  color:var(--muted);
+  text-decoration:none;
+  border-left:2px solid transparent;
+  transition:all .2s;
+  cursor:pointer;
+  background:none;
+  border-top:none;
+  border-right:none;
+  border-bottom:none;
+  width:100%;
+  text-align:left;
+  font-family:'DM Sans',sans-serif;
+}
+.nav-item:hover{color:var(--cream);background:rgba(212,175,55,0.05)}
+.nav-item.active{
+  color:var(--gold);
+  border-left-color:var(--gold);
+  background:rgba(212,175,55,0.07);
+}
+.nav-item.module-item{
+  font-family:'Syne',sans-serif;
+  font-weight:600;
+  font-size:.78rem;
+  color:rgba(251,251,251,0.5);
+  padding-left:24px;
+  margin-top:4px;
+}
+.nav-item.module-item.active{color:var(--gold)}
+
+/* ── Socials in sidebar ──────────────────────────────────────────── */
+.sidebar-socials{
+  padding:16px 24px 28px;
+  border-top:1px solid var(--border2);
+}
+.sidebar-socials p{
+  font-size:.62rem;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  color:var(--muted);
+  margin-bottom:10px;
+}
+.social-links{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.social-link{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  font-size:.72rem;
+  padding:5px 9px;
+  border-radius:4px;
+  border:1px solid var(--border);
+  color:var(--muted);
+  text-decoration:none;
+  transition:all .2s;
+  font-family:'DM Mono',monospace;
+}
+.social-link:hover{
+  color:var(--gold);
+  border-color:var(--gold);
+  background:rgba(212,175,55,0.06);
+}
+.social-link svg{width:12px;height:12px;flex-shrink:0}
+
+/* ── Topbar ──────────────────────────────────────────────────────── */
+#topbar{
+  position:fixed;
+  top:0; left:0; right:0;
+  height:60px;
+  background:rgba(10,10,10,0.85);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border2);
+  z-index:80;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 24px;
+}
+.topbar-left{display:flex;align-items:center;gap:16px}
+
+/* Hamburger */
+#hamburger{
+  width:36px; height:36px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:5px;
+  cursor:pointer;
+  background:none;
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:0;
+  transition:border-color .2s;
+}
+#hamburger:hover{border-color:var(--gold)}
+#hamburger span{
+  display:block;
+  width:16px; height:1.5px;
+  background:var(--cream);
+  transition:all .3s cubic-bezier(.4,0,.2,1);
+  transform-origin:center;
+}
+#hamburger.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+#hamburger.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+#hamburger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+
+.topbar-brand{
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:.95rem;
+  color:var(--cream);
+  letter-spacing:.04em;
+}
+.topbar-brand em{color:var(--gold);font-style:normal}
+
+.topbar-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.topbar-lesson{
+  font-size:.72rem;
+  color:var(--muted);
+  font-family:'DM Mono',monospace;
+  display:none;
+}
+@media(min-width:600px){.topbar-lesson{display:block}}
+
+.topbar-progress{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:.7rem;
+  color:var(--muted);
+}
+.topbar-bar{
+  width:80px; height:3px;
+  background:rgba(255,255,255,0.08);
+  border-radius:2px;
+  overflow:hidden;
+}
+.topbar-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--gold-dim),var(--gold));
+  width:0%;
+  transition:width .6s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── Main layout ─────────────────────────────────────────────────── */
+#main{
+  position:relative;
+  z-index:1;
+  margin-top:60px;
+  min-height:calc(100vh - 60px);
+}
+
+/* ── Sections ────────────────────────────────────────────────────── */
+.course-section{
+  max-width:860px;
+  margin:0 auto;
+  padding:80px 28px;
+  opacity:0;
+  transform:translateY(24px);
+  transition:opacity .5s ease, transform .5s ease;
+}
+.course-section.visible{opacity:1;transform:translateY(0)}
+
+/* ── Hero ────────────────────────────────────────────────────────── */
+#hero{
+  max-width:100%;
+  padding:100px 28px 80px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.hero-eyebrow{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-family:'DM Mono',monospace;
+  font-size:.7rem;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--gold);
+  background:rgba(212,175,55,0.08);
+  border:1px solid rgba(212,175,55,0.2);
+  padding:6px 14px;
+  border-radius:100px;
+  margin-bottom:28px;
+  animation:fadeUp .6s ease both;
+}
+.hero-eyebrow::before{
+  content:'';
+  width:6px; height:6px;
+  border-radius:50%;
+  background:var(--gold);
+  animation:pulse 2s ease infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
+.hero-title{
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:clamp(2.6rem,7vw,5rem);
+  line-height:1.0;
+  letter-spacing:-.02em;
+  margin-bottom:10px;
+  animation:fadeUp .6s .1s ease both;
+}
+.hero-title em{
+  font-style:normal;
+  color:var(--gold);
+  position:relative;
+}
+.hero-sub{
+  font-family:'Syne',sans-serif;
+  font-weight:500;
+  font-size:clamp(1rem,2.5vw,1.4rem);
+  color:var(--muted);
+  margin-bottom:28px;
+  animation:fadeUp .6s .2s ease both;
+}
+.hero-desc{
+  max-width:560px;
+  font-size:1rem;
+  color:rgba(251,251,251,0.6);
+  line-height:1.7;
+  margin-bottom:48px;
+  animation:fadeUp .6s .3s ease both;
+}
+.hero-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:center;
+  animation:fadeUp .6s .4s ease both;
+}
+.badge{
+  font-size:.75rem;
+  padding:6px 14px;
+  border-radius:100px;
+  border:1px solid var(--border);
+  color:rgba(251,251,251,0.55);
+  font-family:'DM Mono',monospace;
+}
+.badge.gold{border-color:rgba(212,175,55,0.4);color:var(--gold)}
+
+/* floating circles hero deco */
+.hero-circle{
+  position:absolute;
+  border-radius:50%;
+  border:1px solid rgba(212,175,55,0.1);
+  pointer-events:none;
+  animation:rotateSlow 30s linear infinite;
+}
+.hero-circle:nth-child(1){width:500px;height:500px;top:-120px;right:-150px;animation-duration:40s}
+.hero-circle:nth-child(2){width:300px;height:300px;top:40px;right:-50px;animation-duration:25s;animation-direction:reverse}
+.hero-circle:nth-child(3){width:180px;height:180px;bottom:60px;left:5%;border-color:rgba(212,175,55,0.06)}
+@keyframes rotateSlow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* ── Day header ──────────────────────────────────────────────────── */
+.day-header{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  margin-bottom:48px;
+  padding-bottom:28px;
+  border-bottom:1px solid var(--border2);
+}
+.day-badge{
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:.65rem;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--ink);
+  background:var(--gold);
+  padding:6px 12px;
+  border-radius:4px;
+  flex-shrink:0;
+}
+.day-title-block h2{
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:clamp(1.6rem,3.5vw,2.2rem);
+  line-height:1.1;
+}
+.day-title-block p{
+  font-size:.88rem;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+/* ── Module block ────────────────────────────────────────────────── */
+.module{
+  margin-bottom:64px;
+}
+.module-header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:28px;
+}
+.module-num{
+  width:32px; height:32px;
+  border-radius:50%;
+  background:rgba(212,175,55,0.1);
+  border:1px solid rgba(212,175,55,0.3);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:.72rem;
+  color:var(--gold);
+  flex-shrink:0;
+}
+.module-title{
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:1.05rem;
+  color:var(--cream);
+}
+
+/* ── Lesson ──────────────────────────────────────────────────────── */
+.lesson{
+  background:var(--glass);
+  border:1px solid var(--border2);
+  border-radius:10px;
+  padding:28px;
+  margin-bottom:24px;
+  position:relative;
+  overflow:hidden;
+  transition:border-color .25s;
+}
+.lesson::before{
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0;
+  height:2px;
+  background:linear-gradient(90deg, var(--gold-dim), var(--gold), transparent);
+  opacity:0;
+  transition:opacity .3s;
+}
+.lesson:hover{border-color:rgba(212,175,55,0.3)}
+.lesson:hover::before{opacity:1}
+
+.lesson-tag{
+  display:inline-block;
+  font-family:'DM Mono',monospace;
+  font-size:.62rem;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--gold);
+  background:rgba(212,175,55,0.08);
+  padding:3px 8px;
+  border-radius:3px;
+  margin-bottom:10px;
+}
+.lesson h3{
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:1.02rem;
+  margin-bottom:12px;
+  color:var(--cream);
+}
+.lesson p{
+  font-size:.93rem;
+  color:rgba(251,251,251,0.65);
+  line-height:1.75;
+  margin-bottom:12px;
+}
+.lesson p:last-child{margin-bottom:0}
+
+/* Objectives */
+.objectives{
+  background:rgba(212,175,55,0.04);
+  border:1px solid rgba(212,175,55,0.14);
+  border-radius:6px;
+  padding:14px 16px;
+  margin:14px 0;
+}
+.objectives-label{
+  font-family:'Syne',sans-serif;
+  font-size:.65rem;
+  font-weight:700;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--gold);
+  margin-bottom:10px;
+}
+.objectives li{
+  list-style:none;
+  font-size:.85rem;
+  color:rgba(251,251,251,0.7);
+  padding:4px 0 4px 20px;
+  position:relative;
+  line-height:1.5;
+}
+.objectives li::before{
+  content:'✓';
+  position:absolute;
+  left:0;
+  color:var(--gold);
+  font-size:.75rem;
+}
+
+/* Key terms table */
+.terms-table{
+  width:100%;
+  border-collapse:collapse;
+  margin:16px 0;
+  font-size:.85rem;
+}
+.terms-table td{
+  padding:10px 14px;
+  border-bottom:1px solid var(--border2);
+  vertical-align:top;
+  line-height:1.6;
+}
+.terms-table td:first-child{
+  font-family:'Syne',sans-serif;
+  font-weight:600;
+  color:var(--gold);
+  white-space:nowrap;
+  width:120px;
+}
+.terms-table td:last-child{color:rgba(251,251,251,0.65)}
+.terms-table tr:last-child td{border-bottom:none}
+
+/* Comparison table */
+.compare-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.85rem}
+.compare-table th{
+  padding:10px 14px;
+  background:rgba(212,175,55,0.08);
+  font-family:'Syne',sans-serif;
+  font-size:.72rem;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--gold);
+  border:1px solid var(--border2);
+}
+.compare-table td{
+  padding:10px 14px;
+  border:1px solid var(--border2);
+  vertical-align:top;
+  line-height:1.6;
+  color:rgba(251,251,251,0.65);
+}
+.compare-table td.bad{color:#ff6b6b}
+.compare-table td.good{color:#69db7c}
+
+/* Prompt box */
+.prompt-box{
+  background:#0d1a0e;
+  border:1px solid rgba(46,125,50,0.4);
+  border-radius:8px;
+  margin:14px 0;
+  overflow:hidden;
+}
+.prompt-label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 14px;
+  background:rgba(46,125,50,0.12);
+  border-bottom:1px solid rgba(46,125,50,0.25);
+  font-family:'DM Mono',monospace;
+  font-size:.68rem;
+  color:#69db7c;
+  letter-spacing:.08em;
+}
+.prompt-label::before{content:'▶';font-size:.6rem;color:rgba(105,219,124,0.6)}
+.prompt-text{
+  padding:14px 16px;
+  font-family:'DM Mono',monospace;
+  font-size:.8rem;
+  color:#a8e6b5;
+  line-height:1.8;
+  white-space:pre-wrap;
+}
+.copy-btn{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin:0 14px 12px auto;
+  width:fit-content;
+  background:rgba(46,125,50,0.15);
+  border:1px solid rgba(46,125,50,0.3);
+  color:#69db7c;
+  font-family:'DM Mono',monospace;
+  font-size:.68rem;
+  padding:5px 10px;
+  border-radius:4px;
+  cursor:pointer;
+  transition:all .2s;
+}
+.copy-btn:hover{background:rgba(46,125,50,0.3);border-color:#69db7c}
+.copy-btn.copied{color:#a8e6b5}
+
+/* Tip box */
+.tip-box{
+  background:rgba(244,161,29,0.05);
+  border:1px solid rgba(244,161,29,0.22);
+  border-radius:6px;
+  padding:12px 16px;
+  margin:14px 0;
+  font-size:.85rem;
+  color:rgba(251,251,251,0.65);
+  line-height:1.7;
+  display:flex;
+  gap:10px;
+}
+.tip-box::before{
+  content:'💡';
+  flex-shrink:0;
+  margin-top:1px;
+  font-size:.9rem;
+}
+
+/* Step box */
+.step-box{
+  background:rgba(212,175,55,0.04);
+  border:1px solid var(--border2);
+  border-left:3px solid var(--gold-dim);
+  border-radius:0 6px 6px 0;
+  padding:12px 16px;
+  margin:8px 0;
+  font-size:.87rem;
+  line-height:1.7;
+  color:rgba(251,251,251,0.65);
+}
+.step-box strong{
+  display:block;
+  font-family:'Syne',sans-serif;
+  font-size:.8rem;
+  font-weight:700;
+  color:var(--gold);
+  margin-bottom:4px;
+}
+
+/* Info table */
+.info-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.85rem}
+.info-table th{
+  padding:10px 14px;
+  background:rgba(212,175,55,0.1);
+  font-family:'Syne',sans-serif;
+  font-size:.72rem;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--gold);
+  border:1px solid var(--border2);
+  text-align:left;
+}
+.info-table td{
+  padding:10px 14px;
+  border:1px solid var(--border2);
+  line-height:1.6;
+  color:rgba(251,251,251,0.65);
+  vertical-align:top;
+}
+.info-table td:first-child{
+  font-family:'Syne',sans-serif;
+  font-weight:600;
+  color:rgba(251,251,251,0.85);
+  white-space:nowrap;
+}
+.info-table tr:nth-child(even) td{background:rgba(212,175,55,0.02)}
+
+/* Warning */
+.warning{
+  background:rgba(255,82,82,0.06);
+  border:1px solid rgba(255,82,82,0.2);
+  border-radius:6px;
+  padding:10px 14px;
+  font-size:.82rem;
+  color:rgba(255,130,130,0.85);
+  margin:12px 0;
+  display:flex;
+  gap:8px;
+  align-items:flex-start;
+  line-height:1.6;
+}
+.warning::before{content:'⚠';flex-shrink:0}
+
+/* Cannot list */
+.cannot-list li{
+  list-style:none;
+  padding:5px 0 5px 22px;
+  position:relative;
+  font-size:.88rem;
+  color:rgba(255,130,130,0.8);
+  line-height:1.5;
+}
+.cannot-list li::before{
+  content:'✕';
+  position:absolute;
+  left:0;
+  font-size:.75rem;
+}
+
+/* ── Day end banner ──────────────────────────────────────────────── */
+.day-end{
+  background:linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(212,175,55,0.04) 100%);
+  border:1px solid rgba(212,175,55,0.25);
+  border-radius:10px;
+  padding:32px;
+  text-align:center;
+  margin-top:40px;
+  position:relative;
+  overflow:hidden;
+}
+.day-end::before{
+  content:'';
+  position:absolute;
+  top:-30px; right:-30px;
+  width:120px; height:120px;
+  border-radius:50%;
+  border:1px solid rgba(212,175,55,0.15);
+}
+.day-end h3{
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:1.15rem;
+  color:var(--gold);
+  margin-bottom:10px;
+}
+.day-end p{
+  font-size:.9rem;
+  color:rgba(251,251,251,0.6);
+  max-width:480px;
+  margin:0 auto;
+  line-height:1.7;
+}
+
+/* ── Final page ──────────────────────────────────────────────────── */
+#final{
+  padding:100px 28px;
+  text-align:center;
+  max-width:700px;
+  margin:0 auto;
+}
+.final-quote{
+  font-family:'Syne',sans-serif;
+  font-style:italic;
+  font-size:clamp(1rem,2.2vw,1.3rem);
+  color:rgba(251,251,251,0.5);
+  line-height:1.7;
+  margin:32px auto;
+  max-width:500px;
+  padding:24px;
+  border-left:3px solid var(--gold-dim);
+  text-align:left;
+}
+.final-quote cite{
+  display:block;
+  font-size:.8rem;
+  margin-top:10px;
+  color:var(--muted);
+  font-style:normal;
+  font-family:'DM Mono',monospace;
+}
+.btn-gold{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:.85rem;
+  letter-spacing:.04em;
+  padding:14px 28px;
+  background:var(--gold);
+  color:var(--ink);
+  text-decoration:none;
+  border-radius:6px;
+  transition:all .2s;
+  border:none;
+  cursor:pointer;
+}
+.btn-gold:hover{background:var(--gold-dim);transform:translateY(-1px)}
+
+/* ── Footer ──────────────────────────────────────────────────────── */
+footer{
+  border-top:1px solid var(--border2);
+  padding:40px 28px;
+  text-align:center;
+  position:relative;
+  z-index:1;
+}
+.footer-inner{max-width:860px;margin:0 auto}
+.footer-brand{
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:1rem;
+  color:var(--gold);
+  margin-bottom:6px;
+}
+.footer-tagline{
+  font-size:.78rem;
+  color:var(--muted);
+  margin-bottom:24px;
+}
+.footer-socials{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px;
+  margin-bottom:20px;
+}
+.footer-social{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:.75rem;
+  padding:7px 12px;
+  border-radius:5px;
+  border:1px solid var(--border);
+  color:var(--muted);
+  text-decoration:none;
+  transition:all .2s;
+  font-family:'DM Mono',monospace;
+}
+.footer-social:hover{color:var(--gold);border-color:var(--gold);background:rgba(212,175,55,0.06)}
+.footer-copy{font-size:.72rem;color:rgba(107,107,107,0.6);margin-top:16px}
+.powered{font-size:.7rem;color:rgba(107,107,107,0.45);margin-top:6px;font-family:'DM Mono',monospace}
+
+/* ── Quick reference ─────────────────────────────────────────────── */
+.ref-category{
+  margin-bottom:32px;
+}
+.ref-category-label{
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:.7rem;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  color:var(--gold);
+  background:rgba(212,175,55,0.08);
+  padding:6px 12px;
+  border-radius:4px;
+  margin-bottom:12px;
+  display:inline-block;
+}
+.ref-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:12px;
+}
+.ref-card{
+  background:var(--glass);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  padding:14px;
+  cursor:pointer;
+  transition:all .2s;
+}
+.ref-card:hover{border-color:rgba(212,175,55,0.3);background:rgba(212,175,55,0.04)}
+.ref-card-name{
+  font-family:'Syne',sans-serif;
+  font-weight:600;
+  font-size:.8rem;
+  color:var(--cream);
+  margin-bottom:6px;
+}
+.ref-card-text{
+  font-family:'DM Mono',monospace;
+  font-size:.7rem;
+  color:var(--muted);
+  line-height:1.6;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+
+/* ── Scroll indicator ────────────────────────────────────────────── */
+.scroll-indicator{
+  position:fixed;
+  top:0; left:0; right:0;
+  height:2px;
+  background:linear-gradient(90deg,var(--gold-dim),var(--gold));
+  transform-origin:left;
+  transform:scaleX(0);
+  z-index:200;
+  transition:transform .1s linear;
+}
+
+/* ── Section divider ─────────────────────────────────────────────── */
+.section-divider{
+  height:1px;
+  background:linear-gradient(90deg, transparent, var(--border), transparent);
+  margin:0;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media(max-width:600px){
+  .course-section,.hero-section{padding-left:18px;padding-right:18px}
+  .lesson{padding:20px}
+  .day-header{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<!-- Scroll progress indicator -->
+<div class="scroll-indicator" id="scrollBar"></div>
+
+<!-- Sidebar overlay -->
+<div id="overlay" onclick="closeSidebar()"></div>
+
+<!-- ── Sidebar ─────────────────────────────────────────────────────── -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <span>THE ZAZU WORKFLOW</span>
+    <small>by Alix · Powered by Synthova Oil</small>
+  </div>
+
+  <div class="sidebar-progress-wrap">
+    <div class="sidebar-progress-label">
+      <span>Your Progress</span>
+      <span id="progressPct">0%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="sidebar-nav">
+    <button class="nav-item" onclick="scrollTo('hero');closeSidebar()">↑ Overview</button>
+
+    <div class="nav-day-label">Day 1 — Meet Manus</div>
+    <button class="nav-item module-item" onclick="scrollTo('mod1');closeSidebar()">Module 1: What Is Manus AI?</button>
+    <button class="nav-item module-item" onclick="scrollTo('mod2');closeSidebar()">Module 2: Setting Up Manus</button>
+    <button class="nav-item module-item" onclick="scrollTo('mod3');closeSidebar()">Module 3: Prompt Engineering</button>
+    <button class="nav-item module-item" onclick="scrollTo('mod4');closeSidebar()">Module 4: Morning Routine</button>
+
+    <div class="nav-day-label">Day 2 — Build Your System</div>
+    <button class="nav-item module-item" onclick="scrollTo('mod5');closeSidebar()">Module 5: Work & Study Tasks</button>
+    <button class="nav-item module-item" onclick="scrollTo('mod6');closeSidebar()">Module 6: Personal Life</button>
+    <button class="nav-item module-item" onclick="scrollTo('mod7');closeSidebar()">Module 7: Workflows</button>
+    <button class="nav-item module-item" onclick="scrollTo('mod8');closeSidebar()">Module 8: Your Blueprint</button>
+
+    <div class="nav-day-label">Reference</div>
+    <button class="nav-item" onclick="scrollTo('quickref');closeSidebar()">📋 All Prompts</button>
+    <button class="nav-item" onclick="scrollTo('final');closeSidebar()">🎓 Course Complete</button>
+  </div>
+
+  <div class="sidebar-socials">
+    <p>Alix Links</p>
+    <div class="social-links">
+      <a href="https://alixbc.com.ng" target="_blank" class="social-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        alixbc.com.ng
+      </a>
+      <a href="https://ebose267.github.io/Alix-waitlist/" target="_blank" class="social-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Waitlist
+      </a>
+      <a href="https://www.linkedin.com/company/alixbc/" target="_blank" class="social-link">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+        LinkedIn
+      </a>
+      <a href="https://www.instagram.com/alixbc.com.ng/" target="_blank" class="social-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+        Instagram
+      </a>
+      <a href="https://whatsapp.com/channel/0029VbBd9GU5q08hIBR3Jn2s" target="_blank" class="social-link">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+        WhatsApp
+      </a>
+      <a href="https://github.com/Ebose267" target="_blank" class="social-link">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Topbar ──────────────────────────────────────────────────────── -->
+<header id="topbar">
+  <div class="topbar-left">
+    <button id="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="topbar-brand">ZAZU <em>·</em> by Alix</div>
+  </div>
+  <div class="topbar-right">
+    <span class="topbar-lesson" id="currentLesson">Overview</span>
+    <div class="topbar-progress">
+      <div class="topbar-bar"><div class="topbar-fill" id="topbarFill"></div></div>
+      <span id="topbarPct">0%</span>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- MAIN                                                              -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<main id="main">
+
+<!-- ── HERO ────────────────────────────────────────────────────────── -->
+<section id="hero" class="course-section" style="max-width:100%;padding-top:90px;padding-bottom:90px;text-align:center">
+  <div class="hero-circle"></div>
+  <div class="hero-circle"></div>
+  <div class="hero-circle"></div>
+  <div style="position:relative;z-index:2">
+    <div class="hero-eyebrow">2-Day Beginner Course · Manus AI</div>
+    <h1 class="hero-title">The Zazu<br/><em>Workflow</em></h1>
+    <p class="hero-sub">by Alix</p>
+    <p class="hero-desc">Automate your daily routine with Manus AI — no tech background required. 40+ ready-to-use prompts, step-by-step Gmail inbox merging, multi-step workflows, and your personal automation blueprint.</p>
+    <div class="hero-badges">
+      <span class="badge">40+ Prompts</span>
+      <span class="badge">Complete Beginner</span>
+      <span class="badge gold">Day 1 + Day 2</span>
+      <span class="badge">Gmail Inbox Merge</span>
+      <span class="badge">Workflow Builder</span>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ══════════════════════════ DAY 1 ═══════════════════════════════ -->
+<section id="day1" class="course-section">
+  <div class="day-header">
+    <div class="day-badge">DAY 1</div>
+    <div class="day-title-block">
+      <h2>Meet Manus</h2>
+      <p>Understanding AI Agents & Automating Your First Tasks</p>
+    </div>
+  </div>
+
+  <!-- MODULE 1 -->
+  <div class="module" id="mod1">
+    <div class="module-header">
+      <div class="module-num">1</div>
+      <div class="module-title">What Is Manus AI? (And Why You Should Care)</div>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 1.1</span>
+      <h3>From Google to AI Agents: A New Way of Working</h3>
+      <div class="objectives">
+        <div class="objectives-label">🎯 Lesson Objectives</div>
+        <ul>
+          <li>Understand the difference between a search engine and an AI agent</li>
+          <li>Explain in your own words what "autonomous" means in the context of Manus</li>
+          <li>List 3 things Manus can do that Google cannot</li>
+        </ul>
+      </div>
+      <p>For years, the internet worked like a library. You walked in, asked the librarian (Google) where to find something, and then you did all the work yourself — reading, comparing, copying, deciding. AI agents like Manus change this completely.</p>
+      <p>Think of Manus not as a search engine, but as a capable assistant that can think, plan, take action, and report back. You describe the outcome you want. Manus figures out the steps and executes them — browsing the web, reading documents, writing content, organising information — all without you lifting a finger.</p>
+      <table class="terms-table">
+        <tr><td>AI Agent</td><td>A system that can take a goal and break it into tasks, using tools like web browsing, file creation, and code execution to complete them.</td></tr>
+        <tr><td>Autonomous</td><td>Working independently with minimal human input. You set the goal; it handles the how.</td></tr>
+        <tr><td>Prompt</td><td>Your instruction to Manus. The better your prompt, the better your result.</td></tr>
+        <tr><td>Workflow</td><td>A sequence of tasks Manus performs in order to complete a larger goal.</td></tr>
+      </table>
+      <div class="tip-box">Manus is not magic — it is a very organised, very fast assistant. The better you describe what you want, the more it feels like magic.</div>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 1.2</span>
+      <h3>What Manus Can (and Cannot) Do</h3>
+      <div class="objectives">
+        <div class="objectives-label">🎯 Lesson Objectives</div>
+        <ul>
+          <li>Identify at least 5 tasks Manus can automate for you</li>
+          <li>Recognise the current limitations of Manus so you set realistic expectations</li>
+        </ul>
+      </div>
+      <p><strong style="color:var(--gold)">What Manus CAN do:</strong></p>
+      <ul class="objectives" style="margin:8px 0">
+        <li>Research &amp; Summarise: Browse websites, read articles, and give you concise summaries on any topic</li>
+        <li>Write &amp; Edit: Draft emails, reports, essays, plans, and social media posts</li>
+        <li>Organise Information: Sort data, create tables, generate schedules and to-do lists</li>
+        <li>Execute Multi-Step Tasks: Complete long sequences of actions without needing your input at each step</li>
+        <li>Analyse Documents: Read and interpret PDFs, spreadsheets, and text documents</li>
+        <li>Generate Creative Content: Write stories, scripts, captions, marketing copy, and more</li>
+        <li>Code Simple Scripts: Write basic scripts to automate repetitive computer tasks</li>
+      </ul>
+      <p style="margin-top:12px"><strong style="color:#ff6b6b">Current Limitations:</strong></p>
+      <ul class="cannot-list">
+        <li>Cannot access your private accounts unless you connect them</li>
+        <li>Cannot perform physical actions in the real world</li>
+        <li>May make errors — always verify important outputs</li>
+        <li>Does not have real-time internet access by default in all modes</li>
+        <li>Cannot guarantee 100% accuracy on sensitive data (finances, medical)</li>
+      </ul>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 1.3</span>
+      <h3>How Manus Reads Your Instructions</h3>
+      <p>Manus processes natural language — meaning you write to it the way you would write to a smart colleague. It does not require codes, commands, or programming. But there is a skill to it. Vague instructions produce vague results.</p>
+      <table class="compare-table">
+        <tr><th>❌ Vague Instruction</th><th>✅ Clear Instruction</th></tr>
+        <tr><td class="bad">"Summarise the news"</td><td class="good">"Summarise the top 5 tech and business news stories from today, in 2 sentences each, formatted as a bullet list"</td></tr>
+        <tr><td class="bad">"Help me with my emails"</td><td class="good">"Read my last 10 unread emails and categorise them as: Urgent, Needs Reply, or Read Later. Then draft a one-line reply for the urgent ones."</td></tr>
+      </table>
+    </div>
+  </div><!-- /module 1 -->
+
+  <!-- MODULE 2 -->
+  <div class="module" id="mod2">
+    <div class="module-header">
+      <div class="module-num">2</div>
+      <div class="module-title">Setting Up and Navigating Manus</div>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 2.1</span>
+      <h3>Creating Your Account</h3>
+      <div class="objectives">
+        <div class="objectives-label">🎯 Lesson Objectives</div>
+        <ul>
+          <li>Successfully create and verify a Manus AI account</li>
+          <li>Configure basic preferences before first use</li>
+        </ul>
+      </div>
+      <div class="step-box"><strong>Step 1 — Go to manus.im</strong>Click "Get Started" or "Sign Up"</div>
+      <div class="step-box"><strong>Step 2 — Enter your details</strong>Enter your email address and create a secure password</div>
+      <div class="step-box"><strong>Step 3 — Verify your email</strong>Check your inbox for the confirmation link and click it</div>
+      <div class="step-box"><strong>Step 4 — Choose your use case</strong>Select "Personal Productivity" from the onboarding options if unsure</div>
+      <div class="step-box"><strong>Step 5 — Complete your profile</strong>Add your name and time zone</div>
+      <div class="step-box"><strong>Step 6 — Explore</strong>You will land on the Manus dashboard. Take 5 minutes to look around before beginning</div>
+      <div class="tip-box">Use a Gmail or Outlook account for easier integration later. This unlocks email and calendar automation features.</div>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 2.2</span>
+      <h3>The Manus Interface Explained</h3>
+      <table class="info-table">
+        <tr><th>Area</th><th>What It Does</th></tr>
+        <tr><td>Chat / Task Input Bar</td><td>Where you type your instructions and prompts to Manus</td></tr>
+        <tr><td>Execution Panel</td><td>Where you watch Manus work in real-time — browsing, writing, planning</td></tr>
+        <tr><td>Results / Output Panel</td><td>Where the final output of your task appears</td></tr>
+        <tr><td>Memory / Context Settings</td><td>Where you store your preferences so Manus "remembers" you</td></tr>
+        <tr><td>Task History</td><td>A log of everything Manus has done for you previously</td></tr>
+        <tr><td>Integrations</td><td>Where you connect Gmail, Calendar, Notion, and other tools</td></tr>
+      </table>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 2.3</span>
+      <h3>Your First Conversation with Manus</h3>
+      <p>Copy any of these first prompts into the input bar and observe how Manus responds. Don't worry about getting it perfect — this is just your first conversation.</p>
+
+      <div class="prompt-box">
+        <div class="prompt-label">PROMPT #1 — Introduce Yourself</div>
+        <div class="prompt-text">Tell me what you are capable of and give me 5 specific examples of tasks you can automate for someone who manages a busy daily schedule.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">PROMPT #2 — Test Its Knowledge</div>
+        <div class="prompt-text">What are the 3 most important things I should set up in you before I start using you daily? Explain each one in 2 sentences.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">PROMPT #3 — First Real Task</div>
+        <div class="prompt-text">Create a simple morning routine checklist for a productive weekday. Include 8 items, estimated time for each, and mark which ones I could potentially automate with an AI tool like you.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="tip-box">After Manus responds, try asking: "Can you make that more detailed?" or "Give me a version of this that's better suited for someone with a 9-5 job." This teaches you the power of follow-up prompting.</div>
+    </div>
+  </div><!-- /module 2 -->
+
+  <!-- MODULE 3 -->
+  <div class="module" id="mod3">
+    <div class="module-header">
+      <div class="module-num">3</div>
+      <div class="module-title">Prompt Engineering for Beginners</div>
+    </div>
+    <p style="color:rgba(251,251,251,0.55);font-size:.93rem;margin-bottom:24px;line-height:1.75">Prompting is the most important skill in this entire course. Everything else — the tools, the automations, the workflows — lives or dies based on the quality of your instructions.</p>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 3.1</span>
+      <h3>What Is a Prompt?</h3>
+      <p>A prompt is simply what you type to Manus. But not all prompts are equal. A great prompt is specific, contextual, and outcome-focused. If you hired a personal assistant on their first day, you would not say "do something useful." You would explain the task, give context, and describe what success looks like. Same principle here.</p>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 3.2</span>
+      <h3>The 5-Part Prompt Formula</h3>
+      <div class="objectives">
+        <div class="objectives-label">🎯 Lesson Objectives</div>
+        <ul>
+          <li>Memorise the 5-Part Prompt Formula</li>
+          <li>Write at least 3 prompts using the formula for tasks in your own life</li>
+        </ul>
+      </div>
+      <table class="info-table">
+        <tr><th>Part</th><th>What It Means</th><th>Example Phrase</th></tr>
+        <tr><td>1. ROLE</td><td>Tell Manus who or what to act as</td><td>"Act as a productivity coach…"</td></tr>
+        <tr><td>2. CONTEXT</td><td>Give background information about your situation</td><td>"…I'm a university student with 3 exams this week…"</td></tr>
+        <tr><td>3. TASK</td><td>State clearly what you want Manus to do</td><td>"…create a 5-day study schedule for me…"</td></tr>
+        <tr><td>4. FORMAT</td><td>Specify how you want the output structured</td><td>"…formatted as a table with time blocks…"</td></tr>
+        <tr><td>5. CONSTRAINT</td><td>Add any limits or requirements</td><td>"…I can only study between 6pm and 10pm daily."</td></tr>
+      </table>
+      <div class="prompt-box">
+        <div class="prompt-label">📋 COMPLETE FORMULA PROMPT</div>
+        <div class="prompt-text">Act as a productivity coach. I am a busy professional working from home with two kids. Create a realistic daily schedule for me that balances deep work, meetings, family time, and exercise. Format it as an hour-by-hour timetable from 6am to 10pm. I must do school drop-off at 8am and pick-up at 3pm.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 3.3</span>
+      <h3>Common Prompting Mistakes (and Fixes)</h3>
+      <table class="compare-table">
+        <tr><th>❌ Mistake</th><th>✅ Fix</th></tr>
+        <tr><td class="bad"><strong>Too vague:</strong> "Write something about marketing"</td><td class="good">"Write a 200-word Instagram caption promoting a palm oil product for Nigerian retail buyers. Tone: trustworthy and direct."</td></tr>
+        <tr><td class="bad"><strong>No format:</strong> "Give me a list of ideas"</td><td class="good">"Give me 10 content ideas for LinkedIn. Present as a numbered list with a one-line description for each."</td></tr>
+        <tr><td class="bad"><strong>Too many things:</strong> "Write my email, schedule my week, and plan my meals"</td><td class="good">Split into 3 separate prompts — one per task. Manus works best with focused instructions.</td></tr>
+        <tr><td class="bad"><strong>No context:</strong> "Reply to this email"</td><td class="good">"Reply to this email from a client who asked about delivery timelines. Our delivery takes 3-5 business days. Keep the tone professional but friendly."</td></tr>
+        <tr><td class="bad"><strong>First draft accepted:</strong> Taking the output without question</td><td class="good">Always follow up: "Make this shorter", "Use a more formal tone", "Add more specific examples."</td></tr>
+      </table>
+    </div>
+  </div><!-- /module 3 -->
+
+  <!-- MODULE 4 -->
+  <div class="module" id="mod4">
+    <div class="module-header">
+      <div class="module-num">4</div>
+      <div class="module-title">Automating Your Morning Routine</div>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 4.1</span>
+      <h3>Daily Briefings and News Summaries</h3>
+      <p>Instead of scrolling through news apps for 20 minutes, you can have Manus compile a focused briefing in under a minute.</p>
+      <div class="prompt-box">
+        <div class="prompt-label">📰 BASIC MORNING BRIEFING</div>
+        <div class="prompt-text">Summarise today's top 5 news stories across: Technology, Business, and World Events. Keep each summary to 3 sentences. Include the source name for each story.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">📰 NICHE MORNING BRIEFING</div>
+        <div class="prompt-text">I am an engineering student and entrepreneur based in Nigeria. Give me a focused morning briefing covering: (1) Latest developments in AI and IoT, (2) Nigerian tech and business news, (3) One global trend that could affect Nigerian entrepreneurs. Format as a bulleted report.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">📰 MINIMALIST BRIEFING</div>
+        <div class="prompt-text">Give me the 3 most important things happening in the world today. One sentence each. No fluff. Think of what a senior executive would need to know before starting their day.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 4.2</span>
+      <h3>Email Triage, Inbox Merging &amp; Priority Management</h3>
+      <div class="objectives">
+        <div class="objectives-label">🎯 Lesson Objectives</div>
+        <ul>
+          <li>Merge all your Gmail accounts into one unified inbox using Forwarding and POP/IMAP</li>
+          <li>Use Manus to sort, prioritise, and draft replies to emails</li>
+          <li>Set up a reusable email triage routine across all your accounts</li>
+        </ul>
+      </div>
+      <p>Most people managing multiple Gmail accounts waste enormous time switching between inboxes. Before Manus can triage your email properly, you need a single unified inbox it can see. Gmail's built-in Forwarding and POP/IMAP settings make this free and permanent.</p>
+
+      <p style="font-family:'Syne',sans-serif;font-weight:700;color:var(--gold);margin:20px 0 12px;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase">Part A — Merging Your Gmail Inboxes (Do This First)</p>
+
+      <p>Set one Gmail account as your <strong style="color:var(--cream)">Primary Inbox</strong> — the one Manus connects to and where all your emails land. Every other account becomes a <strong style="color:var(--cream)">Sending Account</strong> that forwards its mail to the Primary.</p>
+
+      <p style="font-family:'Syne',sans-serif;font-weight:600;color:rgba(251,251,251,0.8);margin:16px 0 8px;font-size:.88rem">Method 1: Automatic Forwarding (Recommended)</p>
+      <div class="step-box"><strong>Step 1 — Open Your Secondary Gmail Account</strong>Log into the Gmail you want to forward FROM (e.g. your personal Gmail). This is NOT your primary account.</div>
+      <div class="step-box"><strong>Step 2 — Open Gmail Settings</strong>Click the gear icon ⚙ at the top right → select "See all settings".</div>
+      <div class="step-box"><strong>Step 3 — Go to "Forwarding and POP/IMAP" Tab</strong>You will see this tab along the top of the Settings page. Click it.</div>
+      <div class="step-box"><strong>Step 4 — Add a Forwarding Address</strong>Under "Forwarding", click "Add a forwarding address". Type in your PRIMARY Gmail address. Click Next → Proceed → OK.</div>
+      <div class="step-box"><strong>Step 5 — Confirm the Forwarding Request</strong>Gmail sends a confirmation email to your Primary inbox. Open it and click the confirmation link.</div>
+      <div class="step-box"><strong>Step 6 — Activate Forwarding</strong>Back in the secondary account's Forwarding settings, select "Forward a copy of incoming mail to [your primary address]". In the dropdown next to it, choose "Keep Gmail's copy in the Inbox". Click Save Changes.</div>
+      <div class="step-box"><strong>Step 7 — Repeat for Every Secondary Account</strong>If you have 3 Gmail accounts, do Steps 1-6 twice. All roads now lead to your Primary inbox.</div>
+
+      <div class="tip-box">You can also set up Gmail to SEND AS other addresses from your Primary inbox. Go to Settings → Accounts and Import → "Add another email address". This means you can reply from work@gmail.com even while inside your personal inbox.</div>
+
+      <p style="font-family:'Syne',sans-serif;font-weight:600;color:rgba(251,251,251,0.8);margin:20px 0 8px;font-size:.88rem">Method 2: POP/IMAP (For Pulling in Older Emails)</p>
+      <p style="font-size:.87rem;color:rgba(251,251,251,0.55);margin-bottom:12px;line-height:1.7">POP lets you pull all existing emails — including older ones — from a secondary account into your Primary. IMAP syncs in real time. When connecting Manus to Gmail, enable IMAP in Settings → "Forwarding and POP/IMAP" → IMAP Access → Enable IMAP.</p>
+      <div class="step-box"><strong>Step 1 — Enable POP in the Secondary Account</strong>In the secondary Gmail → Settings → "Forwarding and POP/IMAP" tab → Under "POP Download", select "Enable POP for all mail". Click Save Changes.</div>
+      <div class="step-box"><strong>Step 2 — Add the Secondary Account to Your Primary</strong>In your Primary Gmail → Settings → "Accounts and Import" tab → Under "Check mail from other accounts", click "Add a mail account".</div>
+      <div class="step-box"><strong>Step 3 — Configure the POP Connection</strong>Use: Server: pop.gmail.com | Port: 995 | Use SSL: Yes. Enter the password for the secondary account. Click Add Account.</div>
+      <div class="step-box"><strong>Step 4 — Handle Two-Factor Authentication</strong>If the secondary account uses 2FA, create an App Password: Google Account settings → Security → App Passwords → Generate one for "Mail" and use it as the password.</div>
+      <div class="step-box"><strong>Step 5 — Label Incoming Emails</strong>Gmail will ask if you want to label incoming mail. Say Yes and create a label like "From: Work" or "From: Business". This keeps your unified inbox organised when Manus reads it.</div>
+
+      <p style="font-family:'Syne',sans-serif;font-weight:700;color:var(--gold);margin:24px 0 12px;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase">Part B — Using Manus to Triage Your Unified Inbox</p>
+
+      <div class="prompt-box">
+        <div class="prompt-label">📧 PASTE &amp; TRIAGE</div>
+        <div class="prompt-text">[Paste your email list or connect your inbox]
+Read these emails and categorise each one as: URGENT (needs reply today), ACTION NEEDED (needs a task or reply within 3 days), or FYI (read only).
+Present as a table with: Sender | Subject | Category | Suggested Action.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">📧 MULTI-ACCOUNT TRIAGE</div>
+        <div class="prompt-text">I have just merged multiple Gmail inboxes. Some emails are labelled "From: Work", "From: Business", and some are personal.
+Triage my inbox treating these as separate contexts:
+- Work emails: prioritise by deadline and sender seniority
+- Business emails: prioritise by revenue impact
+- Personal: flag only truly urgent items
+Present as three separate tables, one per account context.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">📧 DRAFT QUICK REPLIES</div>
+        <div class="prompt-text">I have received the following emails. [Paste emails]
+For each one that needs a reply, draft a concise professional response.
+My tone is warm but direct. Keep replies under 80 words unless the situation genuinely requires more detail.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">📧 INBOX ZERO PLAN</div>
+        <div class="prompt-text">I have [X] unread emails across my merged inbox. Help me create a 30-minute inbox zero session plan. Tell me the order in which to tackle them, what qualifies as "done", and give me templates for the 3 most common replies I'll likely need to send.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="tip-box">Save your triage prompt as a Manus template. Each morning, open Manus, run the triage prompt once, and you have a complete picture of all your accounts in under 2 minutes — no inbox switching required.</div>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 4.3</span>
+      <h3>Daily Schedule Planning</h3>
+      <div class="prompt-box">
+        <div class="prompt-label">📅 BUILD TODAY'S SCHEDULE</div>
+        <div class="prompt-text">I need to plan today. Here is what I need to get done:
+[List your tasks]
+
+My energy is highest in the morning and drops after 2pm. I have a meeting at [TIME]. I need to eat lunch and take at least one 15-minute break.
+
+Build a realistic hour-by-hour schedule from [START TIME] to [END TIME]. Group similar tasks. Mark the 3 most important items as HIGH PRIORITY.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">📅 WEEKLY PLAN</div>
+        <div class="prompt-text">Help me plan my week. My goals this week are: [List your 3-5 goals]
+My fixed commitments are: [List meetings, classes, appointments]
+
+Create a weekly plan (Monday to Friday) that ensures I make meaningful progress on each goal every day. Present it as a table. Be realistic — include buffer time.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">📅 RESCHEDULE ASSIST</div>
+        <div class="prompt-text">My morning did not go as planned. It is now [CURRENT TIME] and I have only completed: [List what you've done]. I still need to do: [List remaining tasks].
+
+Rebuild my schedule for the rest of the day. Be honest about what is realistically achievable. Flag anything I should move to tomorrow.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="tip-box">Save your best schedule prompt as a template in Manus. Each morning, copy it and update only the task list. This turns a 20-minute planning session into a 3-minute one.</div>
+    </div>
+  </div><!-- /module 4 -->
+
+  <div class="day-end">
+    <h3>✓ Day 1 Complete — Foundation Built</h3>
+    <p>Today you learned what Manus AI is, how to set it up, how to write prompts that work, how to merge your Gmail inboxes into one unified view, and how to automate your morning routine. Tomorrow we go deeper: work tasks, personal life automation, multi-step workflows, and building your permanent personal automation blueprint.</p>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ══════════════════════════ DAY 2 ═══════════════════════════════ -->
+<section id="day2" class="course-section">
+  <div class="day-header">
+    <div class="day-badge">DAY 2</div>
+    <div class="day-title-block">
+      <h2>Build Your System</h2>
+      <p>Deep Automations, Workflows &amp; Your Personal Blueprint</p>
+    </div>
+  </div>
+
+  <!-- MODULE 5 -->
+  <div class="module" id="mod5">
+    <div class="module-header">
+      <div class="module-num">5</div>
+      <div class="module-title">Automating Work and Study Tasks</div>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 5.1</span>
+      <h3>Research and Summarisation</h3>
+      <p>Research is one of Manus's strongest capabilities. Whether you are writing a report, preparing for a meeting, or learning something new, these prompts will save you hours.</p>
+      <div class="prompt-box">
+        <div class="prompt-label">🔍 DEEP RESEARCH SUMMARY</div>
+        <div class="prompt-text">Research the topic: [YOUR TOPIC]
+
+Give me:
+1. A 150-word plain-language explanation of what this topic is
+2. The 5 most important things to understand about it
+3. The top 3 recent developments (last 6 months)
+4. 3 recommended sources I can read to learn more
+
+Write for someone with no prior knowledge of this subject.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">🔍 COMPARE &amp; CONTRAST</div>
+        <div class="prompt-text">Compare [OPTION A] and [OPTION B].
+
+I need to make a decision between them. Give me:
+- A side-by-side comparison table (at least 6 criteria)
+- Your recommendation based on someone who prioritises [YOUR PRIORITY]
+- 3 questions I should ask before making my final decision</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">🔍 MEETING PREP</div>
+        <div class="prompt-text">I have a meeting with [NAME/COMPANY/TOPIC] in 30 minutes. Help me prepare. Give me:
+1. Key background information I should know
+2. 5 smart questions I can ask
+3. 3 potential objections or challenges that might come up and how to address them
+4. One clear goal I should aim to achieve in this meeting</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 5.2</span>
+      <h3>Writing, Drafting and Editing</h3>
+      <div class="prompt-box">
+        <div class="prompt-label">✍️ PROFESSIONAL EMAIL</div>
+        <div class="prompt-text">Write a professional email to [RECIPIENT] regarding [TOPIC].
+Context: [Brief background — 1-2 sentences]
+Goal: [What you want the reader to do or feel after reading]
+Tone: [Formal / Friendly / Urgent / Grateful]
+Length: Under 150 words. Include a clear subject line.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">✍️ EDIT MY DRAFT</div>
+        <div class="prompt-text">I have written a first draft of [DOCUMENT TYPE]. Please:
+1. Identify the 3 biggest weaknesses
+2. Fix grammatical errors
+3. Improve clarity and flow
+4. Suggest a stronger opening sentence
+5. Rate the overall quality out of 10 with justification
+
+[PASTE YOUR DRAFT HERE]</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">✍️ SOCIAL MEDIA POST</div>
+        <div class="prompt-text">Write a [PLATFORM: LinkedIn / Instagram / Twitter] post about [TOPIC].
+
+My personal brand is: [Describe in 1 sentence]
+Tone: [Professional / Inspirational / Casual / Educational]
+Include: A hook opening line, the core message, and a call-to-action.
+Length: Appropriate for [PLATFORM].
+Add 5 relevant hashtags at the end.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 5.3</span>
+      <h3>Data Organisation and Reporting</h3>
+      <div class="prompt-box">
+        <div class="prompt-label">📊 ORGANISE RAW NOTES</div>
+        <div class="prompt-text">Below are my raw, unorganised notes from [CONTEXT: e.g., a meeting, a brainstorm, a lecture].
+
+Please:
+1. Group them into logical categories
+2. Remove duplicates and irrelevant points
+3. Present the cleaned version as a structured outline
+4. Highlight the 3 most important takeaways
+
+[PASTE YOUR NOTES HERE]</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">📊 WEEKLY REVIEW REPORT</div>
+        <div class="prompt-text">Help me write my weekly review. Here is what happened this week:
+[Paste or describe your week — tasks done, wins, problems, conversations]
+
+Structure my review as:
+1. Wins this week (bullet points)
+2. What did not go as planned (honest assessment)
+3. Key lessons learned
+4. Priority focus for next week (top 3)
+5. One thing I should stop, start, and continue doing</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+    </div>
+  </div><!-- /module 5 -->
+
+  <!-- MODULE 6 -->
+  <div class="module" id="mod6">
+    <div class="module-header">
+      <div class="module-num">6</div>
+      <div class="module-title">Automating Your Personal Life</div>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 6.1</span>
+      <h3>Meal Planning and Grocery Lists</h3>
+      <div class="prompt-box">
+        <div class="prompt-label">🍽️ WEEKLY MEAL PLAN</div>
+        <div class="prompt-text">Create a 7-day meal plan for me.
+
+My preferences: [e.g., Nigerian cuisine, no pork, high protein]
+My cooking skill: [Beginner / Intermediate]
+Time available to cook: [e.g., 30 minutes on weekdays, more on weekends]
+Budget: [Approximate weekly food budget]
+
+For each day include: Breakfast, Lunch, Dinner, and one Snack.
+After the meal plan, give me the full grocery list organised by category (Proteins, Vegetables, Grains, etc.).</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">🍽️ MEAL PREP PLAN</div>
+        <div class="prompt-text">I want to meal prep for the week on Sunday. Help me plan a 2-hour meal prep session.
+My week looks like: [Brief description — busy days, events]
+I want to prioritise: [Health goals, specific cuisine, cost-saving]
+Tell me what to cook, in what order, how to store it, and how long it stays fresh.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 6.2</span>
+      <h3>Finance Tracking and Budgeting Help</h3>
+      <div class="warning">Never share full bank account details or passwords with any AI tool. For finance tasks, use anonymised or summarised data.</div>
+      <div class="prompt-box">
+        <div class="prompt-label">💰 BUILD A BUDGET</div>
+        <div class="prompt-text">Help me create a monthly budget.
+My monthly income (after tax): [AMOUNT]
+My regular expenses:
+  - Rent/Housing: [AMOUNT]
+  - Food: [AMOUNT]
+  - Transport: [AMOUNT]
+  - Subscriptions: [AMOUNT]
+  - Other: [AMOUNT]
+My financial goals: [e.g., save 20%, pay off debt, build emergency fund]
+
+Build a realistic budget. Show me where I can cut. Use the 50/30/20 rule as a guide and tell me how I compare to it.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">💰 SAVINGS GOAL PLANNER</div>
+        <div class="prompt-text">I want to save [AMOUNT] for [GOAL: e.g., a laptop, travel, an emergency fund] in [TIMEFRAME].
+My current monthly surplus (income minus expenses) is approximately [AMOUNT].
+
+Build a savings plan for me. Tell me: exactly how much to set aside monthly, where to keep it, and how to automate the saving process.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 6.3</span>
+      <h3>Health, Fitness, and Habit Tracking</h3>
+      <div class="prompt-box">
+        <div class="prompt-label">💪 FITNESS PLAN</div>
+        <div class="prompt-text">Create a beginner-friendly [DURATION: 4-week / 8-week] fitness plan for me.
+My goal: [e.g., lose weight, build strength, improve stamina]
+My current fitness level: [Beginner / Some experience]
+Equipment available: [e.g., none / dumbbells / gym access]
+Time per session: [e.g., 30 minutes]
+Days per week I can commit: [NUMBER]
+
+Give me a week-by-week plan. For each day include: exercise, sets/reps or duration, rest time. Add a brief explanation of why each exercise is included.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">💪 HABIT TRACKER DESIGN</div>
+        <div class="prompt-text">Help me design a simple daily habit tracker.
+Habits I want to build: [List 5-7 habits]
+Habits I want to break: [List 1-3 habits]
+
+Create:
+1. A morning routine checklist (5-10 items, max 60 minutes)
+2. An evening routine checklist (5 items, max 30 minutes)
+3. A simple weekly scoring system (so I can track my consistency)
+4. One motivational "anchor sentence" I can read each morning</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+    </div>
+  </div><!-- /module 6 -->
+
+  <!-- MODULE 7 -->
+  <div class="module" id="mod7">
+    <div class="module-header">
+      <div class="module-num">7</div>
+      <div class="module-title">Building Multi-Step Workflows</div>
+    </div>
+    <p style="color:rgba(251,251,251,0.55);font-size:.93rem;margin-bottom:24px;line-height:1.75">Workflows are where the real power is. A workflow chains multiple tasks together so that one instruction triggers a whole sequence of actions. This is where you stop saving minutes and start saving hours.</p>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 7.1</span>
+      <h3>What Is a Workflow?</h3>
+      <table class="compare-table">
+        <tr><th>Manual Workflow (45 min)</th><th>Manus Workflow (5 min)</th></tr>
+        <tr>
+          <td class="bad">1. Check email<br/>2. Identify urgent messages<br/>3. Draft replies<br/>4. Update task list<br/>5. Adjust schedule</td>
+          <td class="good">"Review my emails, flag urgent ones, draft replies, add any new tasks to my list, and tell me if my schedule needs adjusting."</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 7.2</span>
+      <h3>Chaining Tasks in Manus</h3>
+      <div class="prompt-box">
+        <div class="prompt-label">⚙️ CONTENT CREATION WORKFLOW</div>
+        <div class="prompt-text">I need to create a LinkedIn post about [TOPIC]. Complete this full workflow:
+Step 1: Research the topic and give me 5 key insights
+Step 2: Draft 3 different LinkedIn post options (under 250 words each) using different hooks
+Step 3: Rate each option out of 10 and explain why
+Step 4: Combine the best elements of all three into one final post
+Step 5: Suggest the best day and time to post this for maximum engagement</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">⚙️ PROJECT KICKOFF WORKFLOW</div>
+        <div class="prompt-text">I am starting a new project: [PROJECT DESCRIPTION]
+Run a full project kickoff for me:
+Step 1: Identify potential challenges and risks
+Step 2: Break the project into phases with estimated timelines
+Step 3: List all the resources, tools, or people I will need
+Step 4: Write a project brief (1 page)
+Step 5: Create a 30-day action plan with weekly milestones</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">⚙️ LEARNING WORKFLOW</div>
+        <div class="prompt-text">I want to learn [SKILL/TOPIC] in [TIMEFRAME]. Create a full learning plan:
+Step 1: Break down the skill into component parts (beginner to advanced)
+Step 2: Find and list the best free resources for each part
+Step 3: Build a weekly study schedule that fits [MY AVAILABILITY]
+Step 4: Design 3 practical exercises I can do to apply the learning
+Step 5: Create a self-assessment test I can take at the end of Week 2</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 7.3</span>
+      <h3>Connecting Manus to Other Tools</h3>
+      <table class="info-table">
+        <tr><th>Tool</th><th>What It Enables</th></tr>
+        <tr><td>Gmail / Email</td><td>Read, categorise, draft, and send emails directly from Manus</td></tr>
+        <tr><td>Google Calendar</td><td>View your schedule, create events, and avoid double-booking</td></tr>
+        <tr><td>Google Docs / Drive</td><td>Create, edit, and organise documents automatically</td></tr>
+        <tr><td>Notion</td><td>Populate databases, update task boards, and manage notes</td></tr>
+        <tr><td>Slack</td><td>Summarise channels, draft messages, and track important threads</td></tr>
+        <tr><td>Web Browser</td><td>Browse any website, extract information, and compile research</td></tr>
+        <tr><td>File Upload</td><td>Upload PDFs, Word docs, spreadsheets — Manus reads and analyses them</td></tr>
+      </table>
+    </div>
+  </div><!-- /module 7 -->
+
+  <!-- MODULE 8 -->
+  <div class="module" id="mod8">
+    <div class="module-header">
+      <div class="module-num">8</div>
+      <div class="module-title">Your Personal Automation Blueprint</div>
+    </div>
+    <p style="color:rgba(251,251,251,0.55);font-size:.93rem;margin-bottom:24px;line-height:1.75">This is the most important module in the entire course. Everything you have learned leads to this: designing a permanent, personalised system that runs your routine with minimal manual effort.</p>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 8.1</span>
+      <h3>Auditing Your Daily Routine</h3>
+      <div class="prompt-box">
+        <div class="prompt-label">🗺️ ROUTINE AUDIT PROMPT</div>
+        <div class="prompt-text">I want to audit my daily routine. I will describe a typical weekday for me:
+[Describe your day from wake-up to sleep — be as specific as possible]
+
+Based on this, please:
+1. Map out my day as a timeline showing how I currently spend each hour
+2. Estimate how much time I spend on each category: Deep Work, Communication, Admin, Personal Care, Leisure, Wasted/Unproductive Time
+3. For each activity, tag it as: AUTOMATE (Manus can do this), STREAMLINE (Manus can make this faster), KEEP (needs to stay manual), or ELIMINATE (not necessary)
+4. Calculate how many hours per week I could recover if I acted on your suggestions
+5. Identify my single biggest time drain</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 8.2</span>
+      <h3>Designing Your Automation Stack</h3>
+      <div class="prompt-box">
+        <div class="prompt-label">🏗️ BUILD MY AUTOMATION STACK</div>
+        <div class="prompt-text">Based on everything I have told you about my life and routine, help me build my personal automation stack.
+
+I am: [Brief description of who you are — role, lifestyle, goals]
+My biggest time drains are: [List from your audit]
+My top 3 goals right now are: [List them]
+
+Design my automation stack:
+1. My DAILY automations (things I should run every single day)
+2. My WEEKLY automations (things I run once a week)
+3. My ON-DEMAND prompts (saved prompts I use when needed)
+4. My priority integration to set up first
+5. The one automation that will have the biggest immediate impact on my life</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+      <table class="info-table" style="margin-top:16px">
+        <tr><th>Frequency</th><th>Automation</th><th>Time Saved</th></tr>
+        <tr><td>Daily (Morning)</td><td>Morning Briefing + Unified Email Triage + Daily Schedule</td><td>~45 min/day</td></tr>
+        <tr><td>Daily (Evening)</td><td>Daily Review + Next Day Planning + Habit Log</td><td>~20 min/day</td></tr>
+        <tr><td>Weekly (Monday)</td><td>Weekly Plan + Priority Setting + Goal Alignment</td><td>~60 min/week</td></tr>
+        <tr><td>Weekly (Friday)</td><td>Weekly Review + Report + Lessons Learned</td><td>~45 min/week</td></tr>
+        <tr><td>On Demand</td><td>Research, Writing, Analysis, Meeting Prep</td><td>Variable</td></tr>
+        <tr><td>Monthly</td><td>Budget Review + Goal Progress + System Audit</td><td>~2 hrs/month</td></tr>
+      </table>
+    </div>
+
+    <div class="lesson">
+      <span class="lesson-tag">Lesson 8.3</span>
+      <h3>Your 30-Day Challenge</h3>
+      <div class="step-box"><strong>Week 1: Foundation (Days 1–7)</strong>Run your Morning Briefing prompt every day. Use the Daily Schedule prompt each morning. Do your unified Email Triage every morning before touching any inbox manually. Goal: Build the habit of opening Manus before opening anything else.</div>
+      <div class="step-box"><strong>Week 2: Depth (Days 8–14)</strong>Connect at least one integration (email or calendar). Run your Weekly Plan prompt on Monday. Use the Research workflow for one task this week instead of Googling manually. Goal: Make Manus your first stop for information.</div>
+      <div class="step-box"><strong>Week 3: Expand (Days 15–21)</strong>Build your first multi-step workflow for your most time-consuming recurring task. Create your Automation Stack document listing your 10 most-used prompts. Goal: Have a library of prompts you return to regularly.</div>
+      <div class="step-box"><strong>Week 4: Optimise (Days 22–30)</strong>Do a full routine audit. Compare your time usage to Week 1. Run the "Build My Automation Stack" prompt and refine your system. Goal: Have a working, documented automation system that you will continue using.</div>
+      <div class="prompt-box">
+        <div class="prompt-label">🎯 YOUR 30-DAY CHALLENGE PROMPT</div>
+        <div class="prompt-text">I have just completed the Zazu Workflow course by Alix. Help me build a personalised 30-day automation challenge.
+
+My life context: [Brief description]
+My biggest goals for the next 30 days: [List them]
+Time I can dedicate to learning and building: [Per day/week]
+
+Build a 30-day plan with:
+- One new automation to implement each week
+- A daily 5-minute check-in routine with you
+- Weekly milestones I can measure
+- A "graduation test" at the end of Day 30 to assess my progress</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">⧉ Copy Prompt</button>
+      </div>
+    </div>
+  </div><!-- /module 8 -->
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ══════════════════════ QUICK REFERENCE ══════════════════════════ -->
+<section id="quickref" class="course-section">
+  <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;margin-bottom:6px">Quick Reference</h2>
+  <p style="color:var(--muted);font-size:.88rem;margin-bottom:32px">All 40+ prompts in one place. Click any card to expand and copy.</p>
+
+  <div class="ref-category">
+    <div class="ref-category-label">Day 1 — Getting Started</div>
+    <div class="ref-grid">
+      <div class="ref-card" onclick="expandCard(this,'Tell me what you are capable of and give me 5 specific examples of tasks you can automate for someone who manages a busy daily schedule.')"><div class="ref-card-name">Introduce Yourself</div><div class="ref-card-text">Tell me what you are capable of...</div></div>
+      <div class="ref-card" onclick="expandCard(this,'Create a simple morning routine checklist for a productive weekday with 8 items, estimated time for each, and mark which ones I could automate with AI.')"><div class="ref-card-name">First Real Task</div><div class="ref-card-text">Create a simple morning routine checklist...</div></div>
+      <div class="ref-card" onclick="expandCard(this,'Act as [ROLE]. I am [CONTEXT]. Please [TASK]. Format the response as [FORMAT]. Note that [CONSTRAINT].')"><div class="ref-card-name">5-Part Formula</div><div class="ref-card-text">Act as [ROLE]. I am [CONTEXT]...</div></div>
+    </div>
+  </div>
+
+  <div class="ref-category">
+    <div class="ref-category-label">Morning Routine</div>
+    <div class="ref-grid">
+      <div class="ref-card" onclick="expandCard(this,'Summarise today\'s top 5 news stories across Tech, Business, and World Events. 3 sentences each. Include the source name.')"><div class="ref-card-name">Morning Briefing</div><div class="ref-card-text">Summarise today's top 5 news stories...</div></div>
+      <div class="ref-card" onclick="expandCard(this,'Read emails from my merged inbox and categorise each as URGENT, ACTION NEEDED, or FYI. Present as a table: Sender | Account | Subject | Category | Action.')"><div class="ref-card-name">Unified Email Triage</div><div class="ref-card-text">Read emails from my merged inbox...</div></div>
+      <div class="ref-card" onclick="expandCard(this,'I need to plan today. [List tasks]. My energy is highest in the morning. Build an hour-by-hour schedule from [TIME] to [TIME]. Mark the 3 most important items.')"><div class="ref-card-name">Build Today\'s Schedule</div><div class="ref-card-text">I need to plan today. [List tasks]...</div></div>
+    </div>
+  </div>
+
+  <div class="ref-category">
+    <div class="ref-category-label">Work &amp; Study</div>
+    <div class="ref-grid">
+      <div class="ref-card" onclick="expandCard(this,'Research [TOPIC]. Give me: a 150-word explanation, 5 key things to know, 3 recent developments, and 3 recommended sources.')"><div class="ref-card-name">Deep Research</div><div class="ref-card-text">Research [TOPIC]. Give me: a 150-word explanation...</div></div>
+      <div class="ref-card" onclick="expandCard(this,'I have a meeting about [TOPIC] in 30 minutes. Give me: background info, 5 smart questions, 3 potential objections and responses, and my main goal for the meeting.')"><div class="ref-card-name">Meeting Prep</div><div class="ref-card-text">I have a meeting about [TOPIC] in 30 minutes...</div></div>
+      <div class="ref-card" onclick="expandCard(this,'Help me write my weekly review: [Describe week]. Structure as: Wins, What Didn\'t Work, Lessons Learned, Next Week\'s Top 3, and Stop/Start/Continue.')"><div class="ref-card-name">Weekly Review</div><div class="ref-card-text">Help me write my weekly review...</div></div>
+    </div>
+  </div>
+
+  <div class="ref-category">
+    <div class="ref-category-label">Workflows</div>
+    <div class="ref-grid">
+      <div class="ref-card" onclick="expandCard(this,'I need a LinkedIn post about [TOPIC]. Step 1: Research. Step 2: Draft 3 options. Step 3: Rate each. Step 4: Create final version. Step 5: Suggest best posting time.')"><div class="ref-card-name">Content Workflow</div><div class="ref-card-text">LinkedIn post about [TOPIC]. 5-step workflow...</div></div>
+      <div class="ref-card" onclick="expandCard(this,'New project: [DESCRIPTION]. Step 1: Identify risks. Step 2: Break into phases. Step 3: List resources. Step 4: Write project brief. Step 5: Build 30-day action plan.')"><div class="ref-card-name">Project Kickoff</div><div class="ref-card-text">New project: [DESCRIPTION]. 5-step kickoff...</div></div>
+      <div class="ref-card" onclick="expandCard(this,'I have just completed the Zazu Workflow course by Alix. Help me build a personalised 30-day automation challenge. My life context: [CONTEXT]. My goals: [GOALS]. Time available: [TIME].')"><div class="ref-card-name">30-Day Challenge</div><div class="ref-card-text">Build my personalised 30-day automation challenge...</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- card expand modal -->
+<div id="cardModal" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:24px" onclick="closeModal(event)">
+  <div style="background:#111;border:1px solid var(--border);border-radius:12px;max-width:560px;width:100%;padding:0;overflow:hidden" onclick="event.stopPropagation()">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border2)">
+      <span id="modalTitle" style="font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;color:var(--gold)"></span>
+      <button onclick="closeModal()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;line-height:1">×</button>
+    </div>
+    <pre id="modalText" style="font-family:'DM Mono',monospace;font-size:.82rem;color:#a8e6b5;line-height:1.8;padding:20px;white-space:pre-wrap;margin:0;background:#0d1a0e;max-height:50vh;overflow-y:auto"></pre>
+    <div style="padding:12px 20px;border-top:1px solid var(--border2)">
+      <button id="modalCopyBtn" onclick="copyModal()" style="background:rgba(46,125,50,0.2);border:1px solid rgba(46,125,50,0.4);color:#69db7c;font-family:'DM Mono',monospace;font-size:.75rem;padding:8px 16px;border-radius:4px;cursor:pointer;transition:all .2s">⧉ Copy Prompt</button>
+    </div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ════════════════════════ FINAL ══════════════════════════════════ -->
+<section id="final" class="course-section" style="text-align:center">
+  <div style="display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:50%;background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);font-size:1.6rem;margin-bottom:24px">🎓</div>
+  <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.6rem,4vw,2.4rem);margin-bottom:12px">You Have Completed<br/>The Zazu Workflow.</h2>
+  <p style="color:var(--muted);font-size:.95rem;max-width:480px;margin:0 auto 8px;line-height:1.75">You now know how to use Manus AI to automate research, emails across all your accounts, planning, writing, personal finance, health, and multi-step workflows. You have 40+ prompts you can use today.</p>
+  <p style="color:rgba(212,175,55,0.8);font-size:.95rem;margin-bottom:32px">The only thing left is to start.</p>
+  <blockquote class="final-quote">"You do not rise to the level of your goals. You fall to the level of your systems."<cite>— James Clear, Atomic Habits</cite></blockquote>
+  <a href="https://alixbc.com.ng" target="_blank" class="btn-gold" style="margin-top:8px">
+    Visit Alix →
+  </a>
+</section>
+
+<!-- ════════════════════════ FOOTER ════════════════════════════════ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">ALIX</div>
+    <div class="footer-tagline">The Zazu Workflow · Powered by Synthova Oil</div>
+    <div class="footer-socials">
+      <a href="https://alixbc.com.ng" target="_blank" class="footer-social">🌐 alixbc.com.ng</a>
+      <a href="https://ebose267.github.io/Alix-waitlist/" target="_blank" class="footer-social">⚡ Waitlist</a>
+      <a href="https://www.linkedin.com/company/alixbc/" target="_blank" class="footer-social">in LinkedIn</a>
+      <a href="https://www.instagram.com/alixbc.com.ng/" target="_blank" class="footer-social">📸 Instagram</a>
+      <a href="https://whatsapp.com/channel/0029VbBd9GU5q08hIBR3Jn2s" target="_blank" class="footer-social">💬 WhatsApp</a>
+      <a href="https://github.com/Ebose267" target="_blank" class="footer-social">⌥ GitHub</a>
+    </div>
+    <div class="footer-copy">© 2025 Alix. All rights reserved.</div>
+    <div class="powered">Powered by Synthova Oil</div>
+  </div>
+</footer>
+
+</main>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- JS                                                               -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<script>
+// ── Sidebar ──────────────────────────────────────────────────────────
+function toggleSidebar(){
+  const s = document.getElementById('sidebar');
+  const h = document.getElementById('hamburger');
+  const o = document.getElementById('overlay');
+  const isOpen = s.classList.contains('open');
+  if(isOpen){ closeSidebar(); } else {
+    s.classList.add('open');
+    h.classList.add('open');
+    o.classList.add('open');
+  }
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('hamburger').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+function scrollTo(id){
+  document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ── Scroll progress ──────────────────────────────────────────────────
+function updateProgress(){
+  const doc = document.documentElement;
+  const scrollTop = window.scrollY || doc.scrollTop;
+  const scrollHeight = doc.scrollHeight - doc.clientHeight;
+  const pct = scrollHeight > 0 ? Math.round((scrollTop / scrollHeight)*100) : 0;
+
+  document.getElementById('scrollBar').style.transform = `scaleX(${pct/100})`;
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('topbarFill').style.width = pct+'%';
+  document.getElementById('progressPct').textContent = pct+'%';
+  document.getElementById('topbarPct').textContent = pct+'%';
+}
+window.addEventListener('scroll', updateProgress, {passive:true});
+
+// ── Section reveal on scroll ─────────────────────────────────────────
+const observer = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){ e.target.classList.add('visible'); }
+  });
+},{threshold:0.06});
+document.querySelectorAll('.course-section').forEach(s=>observer.observe(s));
+
+// ── Active nav highlight ─────────────────────────────────────────────
+const modules = ['mod1','mod2','mod3','mod4','mod5','mod6','mod7','mod8','quickref','final'];
+const lessonNames = {
+  mod1:'Module 1: What Is Manus AI?',
+  mod2:'Module 2: Setting Up Manus',
+  mod3:'Module 3: Prompt Engineering',
+  mod4:'Module 4: Morning Routine',
+  mod5:'Module 5: Work & Study',
+  mod6:'Module 6: Personal Life',
+  mod7:'Module 7: Workflows',
+  mod8:'Module 8: Blueprint',
+  quickref:'Quick Reference',
+  final:'Course Complete'
+};
+const navObserver = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting && e.intersectionRatio > 0.15){
+      const id = e.target.id;
+      document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+      const match = [...document.querySelectorAll('.nav-item')].find(b=>{
+        const fn = b.getAttribute('onclick')||'';
+        return fn.includes("'"+id+"'");
+      });
+      if(match) match.classList.add('active');
+      const name = lessonNames[id];
+      if(name) document.getElementById('currentLesson').textContent = name;
+    }
+  });
+},{threshold:0.15});
+modules.forEach(id=>{ const el=document.getElementById(id); if(el) navObserver.observe(el); });
+
+// ── Copy prompt ──────────────────────────────────────────────────────
+function copyPrompt(btn){
+  const box = btn.closest('.prompt-box');
+  const text = box.querySelector('.prompt-text').textContent;
+  navigator.clipboard.writeText(text.trim()).then(()=>{
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent = '⧉ Copy Prompt'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ── Ref card modal ───────────────────────────────────────────────────
+function expandCard(card, text){
+  const name = card.querySelector('.ref-card-name').textContent;
+  document.getElementById('modalTitle').textContent = name;
+  document.getElementById('modalText').textContent = text;
+  document.getElementById('modalCopyBtn').textContent = '⧉ Copy Prompt';
+  document.getElementById('cardModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(e){
+  if(!e || e.target === document.getElementById('cardModal')){
+    document.getElementById('cardModal').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+}
+function copyModal(){
+  const text = document.getElementById('modalText').textContent;
+  navigator.clipboard.writeText(text.trim()).then(()=>{
+    document.getElementById('modalCopyBtn').textContent = '✓ Copied!';
+    setTimeout(()=>{ document.getElementById('modalCopyBtn').textContent = '⧉ Copy Prompt'; }, 2000);
+  });
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+// ── Trigger initial progress ─────────────────────────────────────────
+updateProgress();
+</script>
+</body>
+</html>

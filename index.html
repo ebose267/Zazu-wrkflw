@@ -1047,7 +1047,7 @@ footer{
     <button id="hamburger" onclick="toggleSidebar()" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
-    <div class="topbar-brand">ZAZU <em>·</em> by Alix</div>
+    <a href="#hero" class="topbar-brand" style="text-decoration:none">ZAZU <em>·</em> by Alix</a>
   </div>
   <div class="topbar-right">
     <span class="topbar-lesson" id="currentLesson">Overview</span>
@@ -1064,7 +1064,7 @@ footer{
 <main id="main">
 
 <!-- ── HERO ────────────────────────────────────────────────────────── -->
-<section id="hero" class="course-section" style="max-width:100%;padding-top:90px;padding-bottom:90px;text-align:center">
+<section id="hero" class="course-section" style="max-width:100%;padding-top:30px;padding-bottom:60px;text-align:center">
   <div class="hero-circle"></div>
   <div class="hero-circle"></div>
   <div class="hero-circle"></div>
@@ -1074,11 +1074,11 @@ footer{
     <p class="hero-sub">by Alix</p>
     <p class="hero-desc">Automate your daily routine with Manus AI — no tech background required. 40+ ready-to-use prompts, step-by-step Gmail inbox merging, multi-step workflows, and your personal automation blueprint.</p>
     <div class="hero-badges">
-      <span class="badge">40+ Prompts</span>
-      <span class="badge">Complete Beginner</span>
+      <a href="#quickref" class="badge" style="text-decoration:none;cursor:pointer">40+ Prompts</a>
+      <a href="#day1" class="badge" style="text-decoration:none;cursor:pointer">Complete Beginner</a>
       <span class="badge gold">Day 1 + Day 2</span>
-      <span class="badge">Gmail Inbox Merge</span>
-      <span class="badge">Workflow Builder</span>
+      <a href="#mod4" class="badge" style="text-decoration:none;cursor:pointer">Gmail Inbox Merge</a>
+      <a href="#mod7" class="badge" style="text-decoration:none;cursor:pointer">Workflow Builder</a>
     </div>
   </div>
 </section>
@@ -2000,6 +2000,9 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
 
 // ── Trigger initial progress ─────────────────────────────────────────
 updateProgress();
+</script>
+</body>
+</html>ogress();
 </script>
 </body>
 </html>
